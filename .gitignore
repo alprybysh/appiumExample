@@ -1,0 +1,5 @@
+tests.zip
+.idea/
+target/
+.screenshots/
+*.iml
