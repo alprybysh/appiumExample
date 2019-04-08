@@ -113,24 +113,11 @@ public class ShellUtils {
 
     public List<String> getPerfInfoString(PerfType perfType, String perfoptions)  {
         List<String> perfInfo = new ArrayList<>();
-        String pattern = "";
         List<String> resList = getRawDumpsysInfo(perfType, perfoptions);
         switch (perfType.getValue()) {
             case "batterystats":
-                // https://developer.android.com/studio/command-line/dumpsys#inspecting_machine-friendly_output
-                String uid = "";
-                for (String data : resList){
-                    if (data.contains(driver.getCurrentPackage())){
-                        pattern = ParseAdbShell.generalPattern;
-                        uid = ParseAdbShell.captureString(data, pattern).get(2);
-                        break;
-                    }
-                }
-                for (String data : resList) {
-                    if (data.contains(uid)){
-                        perfInfo.add(data);
-                    }
-                }
+                // https://developer.android.com/studio/command-line/dumpsys#battery
+                perfInfo = resList;
                 break;
             case "cpuinfo":
                 // Takes output strings from 0 to 8 with cpu info

@@ -71,7 +71,7 @@ public class AndroidBaseTest {
         if (isLocalRun()) {
             driver.resetApp();
             log.info(PerfProcStats.cleanProcStats(utils));
-            log.info(PerfBatteryStats.cleanBatteryStats(utils));
+            log.info(PerfBatteryStat.cleanBatteryStats(utils));
         }
     }
 
@@ -85,7 +85,7 @@ public class AndroidBaseTest {
             PerfUiInfo.dumpUiInfo(testStatus, utils);
             PerfCpuInfo.dumpCpuInfo(testStatus, utils);
             PerfProcStats.dumpProcStatsInfo(testStatus, utils);
-            PerfBatteryStats.dumpBatteryStats(testStatus, utils);
+            PerfBatteryStat.dumpBatteryStats(testStatus, utils);
         }
     }
 

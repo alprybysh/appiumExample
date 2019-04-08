@@ -1,11 +1,11 @@
 package com.griddynamics.appiumexample.perfomance;
 
-import com.griddynamics.appiumexample.TestStatus;
-import com.griddynamics.appiumexample.utils.ShellUtils;
+        import com.griddynamics.appiumexample.TestStatus;
+        import com.griddynamics.appiumexample.utils.ShellUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+        import java.util.ArrayList;
+        import java.util.Arrays;
+        import java.util.List;
 
 /**
  * Created by alekspribysh on 4/2/19.
@@ -33,6 +33,6 @@ public class PerfCpuInfo extends PerfBase{
     public String toString() {
         return super.toString() +
                 " with following battery performance data: \n" +
-                Arrays.toString(cpuData.toArray()) +"\n";
+                String.join("\n", cpuData);
     }
 }
