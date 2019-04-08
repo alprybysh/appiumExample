@@ -4,10 +4,8 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.griddynamics.appiumexample.Configuration;
 import com.griddynamics.appiumexample.TestStatus;
-import com.griddynamics.appiumexample.perfomance.PerfCpuInfo;
+import com.griddynamics.appiumexample.perfomance.*;
 import com.griddynamics.appiumexample.utils.ShellUtils;
-import com.griddynamics.appiumexample.perfomance.PerfMemInfo;
-import com.griddynamics.appiumexample.perfomance.PerfUiInfo;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.service.local.AppiumDriverLocalService;
 import org.apache.commons.io.FileUtils;
@@ -71,7 +69,9 @@ public class AndroidBaseTest {
     @BeforeMethod(dependsOnMethods = {"initDriver"})
     public void setTestApp() {
         if (isLocalRun()) {
-           driver.resetApp();
+            driver.resetApp();
+            log.info(PerfProcStats.cleanProcStats(utils));
+            log.info(PerfBatteryStats.cleanBatteryStats(utils));
         }
     }
 
@@ -84,6 +84,8 @@ public class AndroidBaseTest {
             PerfMemInfo.dumpMemInfo(testStatus, utils);
             PerfUiInfo.dumpUiInfo(testStatus, utils);
             PerfCpuInfo.dumpCpuInfo(testStatus, utils);
+            PerfProcStats.dumpProcStatsInfo(testStatus, utils);
+            PerfBatteryStats.dumpBatteryStats(testStatus, utils);
         }
     }
 

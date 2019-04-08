@@ -77,7 +77,7 @@ public class PerfUiInfo extends PerfBase {
     }
 
     public static List<Integer> getUiInfo(ShellUtils utils) {
-        return utils.getPerfInfo(PerfType.GFXINFO);
+        return utils.getPerfInfo(PerfType.GFXINFO, "");
     }
 
     public void copyUiInfo(List<Integer> uiInfo) {

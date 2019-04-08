@@ -7,7 +7,6 @@ import com.griddynamics.appiumexample.perfomance.PerfType;
 import io.appium.java_client.android.AndroidDriver;
 import org.apache.commons.text.StringEscapeUtils;
 
-import java.text.DateFormat;
 import java.util.*;
 
 
@@ -55,6 +54,13 @@ public class ShellUtils {
         executeCommand(catItems);
     }
 
+    public String clearPerfStats(PerfType perfType, String options){
+        Map<String, Object> perArgs = new HashMap<>();
+        perArgs.put("command", "dumpsys");
+        perArgs.put("args", Lists.newArrayList(perfType.getValue(), options));
+     return executeCommand(perArgs);
+    }
+
     public String getAppVersion() {
         Map<String, Object> verArgs = new HashMap<>();
         verArgs.put("command", "dumpsys");
@@ -64,24 +70,24 @@ public class ShellUtils {
         return ver[1].replaceAll("\n", "");
     }
 
-    public List<String> getRawDumpsysInfo(PerfType perfType) {
+    public List<String> getRawDumpsysInfo(PerfType perfType, String perfoptions) {
         Map<String, Object> perfArgs = new HashMap<>();
         perfArgs.put("command", "dumpsys");
-        perfArgs.put("args", Lists.newArrayList(perfType.getValue(), driver.getCurrentPackage()));
+        perfArgs.put("args", Lists.newArrayList(perfType.getValue(), perfoptions, driver.getCurrentPackage()));
         String result = executeCommand(perfArgs);
         return Arrays.asList(result.split("\n"));
     }
 
-    public List<Integer> getPerfInfo(PerfType perfType)  {
+    public List<Integer> getPerfInfo(PerfType perfType, String perfoptions)  {
         List<Integer> perfInfo = new ArrayList<>();
         String pattern = "";
-        List<String> resList = getRawDumpsysInfo(perfType);
+        List<String> resList = getRawDumpsysInfo(perfType, perfoptions);
         switch (perfType.getValue()) {
             case "meminfo":
                 // https://developer.android.com/studio/command-line/dumpsys#meminfo
                 // Takes output strings from 26 to 36 with App summary info (Java Heap - TOTAL)
                 resList = resList.subList(26, 36);
-                pattern = ParseAdbShell.memPattern;
+                pattern = ParseAdbShell.generalPattern;
                 break;
             case "gfxinfo":
                 // https://developer.android.com/training/testing/performance#aggregate
@@ -90,73 +96,51 @@ public class ShellUtils {
                 pattern = ParseAdbShell.uiPattern;
                 resetPerfInfo(perfType);
                 break;
-            case "cpuinfo":
-                System.out.println();
-                System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                long requestTime = System.currentTimeMillis();
-                pattern = ParseAdbShell.DATEPATTERN;
-                List<Date> dates = new ArrayList<>();
-                while ((System.currentTimeMillis() - requestTime) < 340_000) {
-                    System.out.println();
-                    System.out.println("While started   " + DateFormat.getDateTimeInstance().format(Calendar.getInstance().getTime()));
-                    System.out.println("while length    " + (System.currentTimeMillis() - requestTime));
-                    for (String str : resList) {
-                        if (str.contains(driver.getCurrentPackage())){
-                            System.out.println();
-                            System.out.println("###################");
-                            System.out.println("I've goat a package");
-                            for (String st : resList) {
-                                System.out.println(st);
-                            }
-                            return perfInfo;
-                        }
-                        if (str.contains("CPU usage from")) {
-                            dates = ParseAdbShell.captureDates(str, pattern);
-                        }
+            case "procstats":
+                // https://developer.android.com/studio/command-line/dumpsys#procstats
+                // Takes output strings from 9 to 10 with aggregate memory stats
+                resList = resList.subList(9, 10);
+                pattern = ParseAdbShell.generalPattern;
+                break;
 
-                    }
-                    if (requestTime > dates.get(0).getTime() && requestTime < dates.get(1).getTime()) {
-                        System.out.println();
-                        System.out.println("&&&&&&&&&&&&&&&&&");
-                        System.out.println("I've got a report");
-                        System.out.println();
-                        for (String str : resList) {
-                            System.out.println(str);
-                        }
-                        break;
-                    }
-                    else{
-                        System.out.println();
-                        System.out.println("%%%%%%%%%%%%%%%%%%%%");
-                        System.out.println("Current time date     " + DateFormat.getDateTimeInstance().format(Calendar.getInstance().getTime()));
-                        System.out.println("Report start date     " + dates.get(0));
-                        System.out.println("Report finished date  " + dates.get(1));
-                        System.out.println("Report finished in ms " + dates.get(1).getTime());
-                        System.out.println("Current time in ms    " + System.currentTimeMillis());
-                        System.out.println("Wait time             " + (dates.get(1).getTime() + 330_000 - System.currentTimeMillis()));
-                        try {
-                            Thread.sleep(dates.get(1).getTime() + 330_000 - System.currentTimeMillis());
-                        }
-                        catch (InterruptedException e){
-                            e.printStackTrace();
-                        }
-                        resList = getRawDumpsysInfo(perfType);
-
-                    }
-
-
-                }
-                System.out.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-                return perfInfo;
         }
         for (String str : resList) {
             perfInfo.addAll(ParseAdbShell.captureValues(str, pattern));
         }
         return perfInfo;
 
+    }
+
+    public List<String> getPerfInfoString(PerfType perfType, String perfoptions)  {
+        List<String> perfInfo = new ArrayList<>();
+        String pattern = "";
+        List<String> resList = getRawDumpsysInfo(perfType, perfoptions);
+        switch (perfType.getValue()) {
+            case "batterystats":
+                // https://developer.android.com/studio/command-line/dumpsys#inspecting_machine-friendly_output
+                String uid = "";
+                for (String data : resList){
+                    if (data.contains(driver.getCurrentPackage())){
+                        pattern = ParseAdbShell.generalPattern;
+                        uid = ParseAdbShell.captureString(data, pattern).get(2);
+                        break;
+                    }
+                }
+                for (String data : resList) {
+                    if (data.contains(uid)){
+                        perfInfo.add(data);
+                    }
+                }
+                break;
+            case "cpuinfo":
+                // Takes output strings from 0 to 8 with cpu info
+                perfInfo = resList.subList(0, 8);
+                break;
+        }
+        return perfInfo;
 
     }
-    
+
     private void resetPerfInfo(PerfType perfType) {
         Map<String, Object> resetPerfArgs = new HashMap<>();
         resetPerfArgs.put("command", "dumpsys");
@@ -164,5 +148,4 @@ public class ShellUtils {
                 .put("args", Lists.newArrayList(perfType.getValue(), driver.getCurrentPackage(), " reset"));
         executeCommand(resetPerfArgs);
     }
-
 }

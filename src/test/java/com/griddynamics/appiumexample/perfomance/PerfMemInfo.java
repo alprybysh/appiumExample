@@ -69,7 +69,7 @@ public class PerfMemInfo extends PerfBase {
     }
 
     public static List<Integer> getMemInfo(ShellUtils utils) {
-        return utils.getPerfInfo(PerfType.MEMINFO);
+        return utils.getPerfInfo(PerfType.MEMINFO, "");
     }
 
     public void copyMemInfo(List<Integer> memInfo) {

@@ -5,6 +5,7 @@ public enum PerfType {
     MEMINFO("meminfo"),
     GFXINFO("gfxinfo"),
     CPUINFO("cpuinfo"),
+    PROCSTATS("procstats"),
     BATTERYSTATS("batterystats");
 
     private final String value;

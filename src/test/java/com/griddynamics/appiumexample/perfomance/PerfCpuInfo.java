@@ -3,6 +3,8 @@ package com.griddynamics.appiumexample.perfomance;
 import com.griddynamics.appiumexample.TestStatus;
 import com.griddynamics.appiumexample.utils.ShellUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -10,20 +12,27 @@ import java.util.List;
  */
 public class PerfCpuInfo extends PerfBase{
 
+    static List<String> cpuData = new ArrayList<>();
+
     public PerfCpuInfo(TestStatus testStatus) {
         super(testStatus);
         setPathToFile("target/cpuinfo.log");
     }
 
 
-    public static List<Integer> getCpuInfo(ShellUtils utils) {
-        return utils.getPerfInfo(PerfType.CPUINFO);
+    public static List<String> getCpuInfo(ShellUtils utils) {
+        return utils.getPerfInfoString(PerfType.CPUINFO, "");
     }
 
     public static void dumpCpuInfo (TestStatus testStatus, ShellUtils utils){
         PerfCpuInfo CpuInfo = new PerfCpuInfo(testStatus);
-        List<Integer> CpuNumbers = getCpuInfo(utils);
-         //uiInfo.copyUiInfo(CpuNumbers);
-//        uiInfo.writeToFile();
+        cpuData = getCpuInfo(utils);
+        CpuInfo.writeToFile();
+    }
+    @Override
+    public String toString() {
+        return super.toString() +
+                " with following battery performance data: \n" +
+                Arrays.toString(cpuData.toArray()) +"\n";
     }
 }
